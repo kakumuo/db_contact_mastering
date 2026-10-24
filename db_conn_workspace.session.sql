@@ -1,0 +1,1 @@
+drop table workspace.contact_mastering_db.user_address_silver

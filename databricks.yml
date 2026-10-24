@@ -13,6 +13,9 @@ variables:
     description: The catalog to use
   schema:
     description: The schema to use
+  volume: 
+    description: The volume to use
+    default: contact_mastering_data
 
 targets:
   dev:
@@ -26,7 +29,7 @@ targets:
       host: https://dbc-5ca2fe4b-95de.cloud.databricks.com
     variables:
       catalog: workspace
-      schema: dev
+      schema: contact_mastering_db_dev
   prod:
     mode: production
     workspace:
@@ -35,7 +38,7 @@ targets:
       root_path: /Workspace/Users/foxfen23@hotmail.com/.bundle/${bundle.name}/${bundle.target}
     variables:
       catalog: workspace
-      schema: prod
+      schema: contact_mastering_db_prod
     permissions:
       - user_name: foxfen23@hotmail.com
         level: CAN_MANAGE

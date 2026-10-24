@@ -7,14 +7,13 @@ linking all records back to a unique Customer Golden ID.
 - The pipeline must produce two core, mastered datasets: `contact` and `contact_address`.
 
 
-## 2. Functional Requirements
-### FR-1: Data Ingestion
+## 2. Requirements
+### 1: Data Ingestion
 - The pipeline must consume data from the following sources:
     * `user.json`: User behavioral and communication preferences.
-    * `external_account_link.csv`: Third-party platform linkage data.
-    * `forget_me.json`: Data indicating user requests for account deletion (Requires careful handling, see DQ).
+    * `delete_request.json`: Data indicating user requests for account deletion (Requires careful handling, see DQ).
 
-### FR-2: Contact Mastering (`contact` table)
+### 2: Contact Mastering (`contact` table)
 - The pipeline must deduplication contacts on a combination of `email`, `name`, `phone number` and `user id`
 - Matching logic must be either: 
     1. Exact match on `email` and/or `phone`
@@ -22,24 +21,27 @@ linking all records back to a unique Customer Golden ID.
 - Mastered records must have a primary identifier stating the 'best' or most recently updated chlid record
 - All records must be linked with a `Master Id`
 
-### FR-3: Address Mastering (`address` table)
+### 3: Address Mastering (`address` table)
 - All address components (Street Lines, City, State, Zip) must be standardized according to postal service guidelines
 - Street details must be recorded as individual components (`street number`, `street name`, `street prefix`, `unit identifier`)
 - Addresses must be mastered regardless of the original user and address type
 - Addresses must be able to be linked back to a master contact
 
-### FR-4: Right to be Forgotten
+### 4: Right to be Forgotten
 - User records that have been requested to be deletetd must be removed.
 - If a user has been removed, all associated address and contact parent records should be recalculated and remastered
 - If a contact record loses all child records, then the contact record should be deleted. 
 - Right to be forgotten requests should be recorded and categorized depending on what information was provided in the `reason` 
 field of the source file. Options must be either `No Reason` or any/multiple of the following `Embarrasment`, `Privacy`, `Lack of Trust`, `Other`
 
-### FR-4: Data Enrichment
+### 5: Data Enrichment
 - **Preferences:** Combine all user preferences into a single up to date preference payload under the master record. If all options under
 a single preference is `Opt-In`, then the mastered preference should also be `Opt-In`, otherwise it should be `Opt-Out`
-- **External Linkage:** Maintain information on linked accounts for all user records
 
+### 6: Quality Check
+- User addreesses must contain a value for the `address_line_1`, `country`, `state`, `city` and `zip` fields
+- Users cannot have multiple addresses with the same `address_type` value; Address types are limited to `Shipping` or `Billing`. 
+- Users must submit profile info with at least `email` or `phone` values present
 
 ## 3. Use Cases
 - The solution developed with the functional requirements above must support the following sample use cases
@@ -86,20 +88,7 @@ any point in time when there is an update or change.
 }
 ```
 
-### **`external_account_link.csv`**
-- **Format**: CSV
-- **Sync Method**: Full Load
-- **Description**: Contains contact information derived from external account links.
-- **File Structure**: 
-```json
-{
-    "user_id":"string",
-    "external_source":"Google | Twitter | Facebook | Microsoft",
-    "external_user_id":"string",
-}
-```
-
-### **`forget_me.json`**
+### **`delete_request.json`**
 - **Format**: JSON
 - **Sync Method**: Delta Updates
 - **Description**: Contains user requests to be forgotten, along with a reason.

@@ -1,7 +1,0 @@
-user_id,external_source,external_user_id
-"some_user001","Google","google_12345"
-"some_user001","Twitter","twitter_67890"
-"some_user002","Facebook","facebook_xyz789"
-"some_user002","Microsoft","ms_54321"
-"some_user002","Google","google_98765"
-"some_user003","Twitter","twitter_abc123"
