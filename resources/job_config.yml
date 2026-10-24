@@ -1,57 +1,57 @@
 resources:
   jobs:
-    test_bundle_job: 
-      name: test_bundle_job
+    contact_mastering_job: 
+      name: contact_mastering_job
       tasks: 
         - task_key: land_new_data
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/utils/land_new_data.py
 
         - task_key: 00_init_catalog
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/00_init_catalog.py 
           depends_on: 
             - task_key: land_new_data
 
         - task_key: 01_init_reference
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/01_init_reference.py 
           depends_on: 
             - task_key: 00_init_catalog
 
         - task_key: 02_ingest_data
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/02_ingest_data.py 
           depends_on: 
             - task_key: 01_init_reference
 
         - task_key: 03_persist_user_profile
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/03_persist_user_profile.py 
           depends_on: 
             - task_key: 02_ingest_data
 
         - task_key: 04_persist_user_deletes
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/04_persist_user_deletes.py 
           depends_on:
             - task_key: 03_persist_user_profile
 
         - task_key: 05_master_address
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/05_master_address.py 
           depends_on: 
             - task_key: 04_persist_user_deletes
 
         - task_key: 06_master_contact
-          existing_cluster_id: 9704332e-a1ba-3d94-9884-0718e268954f
+          environment_key: Default
           spark_python_task: 
             python_file: ../src/06_master_contact.py 
           depends_on: 
@@ -64,7 +64,15 @@ resources:
           default: ${var.schema}
         - name: volume
           default: ${var.volume}
+      queue: 
+        enabled: true
       environments:
         - environment_key: Default
           spec:
             environment_version: "5"
+            dependencies: 
+              - name_generator
+              - random_address
+              - us_address
+            
+      performance_target: PERFORMANCE_OPTIMIZED

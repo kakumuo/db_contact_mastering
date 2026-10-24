@@ -17,8 +17,7 @@ dev = [
     "ruff",
     "databricks-dlt",
     "databricks-connect>=16.4,<16.5",
-    "ipykernel",
-    "usaddress",
+    "ipykernel"
 ]
 
 [project.scripts]
