@@ -1,6 +1,7 @@
 from pyspark.sql import functions as F
-from src.utils.utils import get_config
-from src.utils import schemas as s
+import json
+from utils.utils import get_config
+from utils import schemas as s
 
 # Get configuration from utils.py
 config = get_config()
@@ -52,6 +53,7 @@ def persist_user_deletion_reason_updates():
 
     delete_reason_data = spark.read.table(f"{target_schema}.ref_deletion_reason_type").collect()
     labels = {row["deletion_reason_type_code"]: row["deletion_reason_text"] for row in delete_reason_data}
+    labels_json = json.dumps(labels).replace("'", "''")
     # FIXME: getting error when using ref table -> An error occurred while compiling the AI function: INVALID_ARGUMENT: Must provide at least 1 unique label.
 
     # labels = ["NEEDS", "CUSTOMER_SUPPORT", "PRIVACY_SECURITY", "PRICING_VALUE", "POLICY_TERMS_CHANGE", "COMPETITIVE_ALTERNATIVE", "TECHNICAL_ISSUES", "ACCOUNT_CONTROL", "TRUST", "UNWANTED_COMMUNICATIONS", "NO_LONGER_NEEDED", "PERSONAL_CIRCUMSTANCES", "COMPANY_VALUES"]
@@ -65,7 +67,8 @@ def persist_user_deletion_reason_updates():
     
     user_delete_reason_df = (raw_joined_df.withColumn(
                 "ai_raw_output", 
-                F.ai_classify(F.col("raw.reason"), labels, options={"version":"2.1", "multilabel":True})
+                # F.ai_classify(F.col("raw.reason"), labels, options={"version":"2.1", "multilabel":True})
+                F.expr(f"ai_classify(raw.reason, '{labels_json}', map('version', '2.1', 'multilabel', 'true'))")
             )
             .withColumn(
                 "ai_labeled", 

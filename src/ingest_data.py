@@ -1,6 +1,6 @@
 from pyspark.sql.functions import col, count, count_if
-from src.utils.utils import get_config
-from src.utils import schemas as s
+from utils.utils import get_config
+from utils import schemas as s
 
 # Get configuration from utils.py
 config = get_config()

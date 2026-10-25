@@ -1,0 +1,57 @@
+resources:
+  jobs:
+    contact_mastering_job: 
+      name: contact_mastering_job
+      tasks: 
+        - task_key: ingest_data
+          environment_key: Default
+          spark_python_task: 
+            python_file: ../src/ingest_data.py 
+
+        - task_key: persist_user_profile
+          environment_key: Default
+          spark_python_task: 
+            python_file: ../src/persist_user_profile.py 
+          depends_on: 
+            - task_key: ingest_data
+
+        - task_key: persist_user_deletes
+          environment_key: Default
+          spark_python_task: 
+            python_file: ../src/persist_user_deletes.py 
+          depends_on:
+            - task_key: persist_user_profile
+
+        - task_key: master_address
+          environment_key: Default
+          spark_python_task: 
+            python_file: ../src/master_address.py 
+          depends_on: 
+            - task_key: persist_user_deletes
+
+        - task_key: master_contact
+          environment_key: Default
+          spark_python_task: 
+            python_file: ../src/master_contact.py 
+          depends_on: 
+            - task_key: master_address
+            
+      parameters: 
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+      queue: 
+        enabled: true
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+            dependencies: 
+              - names-generator
+              - random-address
+              - usaddress
+
+      performance_target: PERFORMANCE_OPTIMIZED

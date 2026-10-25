@@ -1,0 +1,43 @@
+resources:
+  jobs:
+    init_job:
+      name: init_job
+      tasks:
+        - task_key: land_new_data
+          environment_key: Default
+          spark_python_task:
+            python_file: ../src/land_new_data.py
+
+        - task_key: init_catalog
+          environment_key: Default
+          spark_python_task:
+            python_file: ../src/init_catalog.py
+          depends_on:
+            - task_key: land_new_data
+
+        - task_key: init_reference
+          environment_key: Default
+          spark_python_task:
+            python_file: ../src/init_reference.py
+          depends_on:
+            - task_key: init_catalog
+
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: volume
+          default: ${var.volume}
+      queue:
+        enabled: true
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+            dependencies:
+              - names-generator
+              - random-address
+              - usaddress
+
+      performance_target: PERFORMANCE_OPTIMIZED

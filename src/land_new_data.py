@@ -2,12 +2,11 @@ import random
 import names_generator as ng
 import random_address as ra
 from datetime import datetime
-import os
 import json
 from utils.utils import get_config
 
 config = get_config()
-target_volume_path = config.target_volume_path
+target_volume_path = config.get("target_volume_path")
 
 def generate_phone_number(opt): 
     area = str(random.randint(0,999)).zfill(3)

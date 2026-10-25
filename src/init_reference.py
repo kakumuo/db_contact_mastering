@@ -3,7 +3,7 @@ from utils.utils import get_config
 from utils import schemas as s
 
 config = get_config()
-target_schema = config.target_schema
+target_schema = config.get("target_schema")
 
 spark.sql(f"USE {target_schema}")
 

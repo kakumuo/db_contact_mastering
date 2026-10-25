@@ -1,8 +1,8 @@
 from pyspark.sql import functions as F
 import usaddress
 import pandas as pd
-from src.utils.utils import get_config
-from src.utils import schemas as s
+from utils.utils import get_config
+from utils import schemas as s
 
 # Get configuration from utils.py
 config = get_config()
@@ -170,7 +170,13 @@ def parse_address(addresses: pd.Series) -> pd.DataFrame:
     res = []
 
     for addr_str in addresses: 
-        tagged, _ = usaddress.tag(str(addr_str))
+        tagged = {}
+        
+        addr = str(addr_str).replace("#APT", "APT").replace("#apt", "apt")
+        try: 
+            tagged, _ = usaddress.tag(addr)
+        except: 
+            pass
 
         res.append({
             "street_number": tagged.get("AddressNumber"),
