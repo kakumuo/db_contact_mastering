@@ -45,7 +45,6 @@ requested_at TIMESTAMP
 
 
 # === SILVER === 
-
 user_profile_schema = """
 user_profile_system_number BIGINT GENERATED ALWAYS AS IDENTITY ,  
 user_profile_name STRING, 
@@ -73,7 +72,6 @@ unit_identifier STRING,
 post_office_box STRING, 
 building_name STRING
 """
-
 user_address_schema = """
 user_address_system_number BIGINT GENERATED ALWAYS AS IDENTITY ,  
 user_profile_system_number BIGINT NOT NULL, 
@@ -93,8 +91,9 @@ country_code STRING,
 postal_code STRING, 
 record_logical_delete_indicator BOOLEAN, 
 source_system_update_timestamp TIMESTAMP,
-
-CONSTRAINT user_address_pk PRIMARY KEY (user_profile_system_number, address_type_code),
+ 
+CONSTRAINT user_address_pk PRIMARY KEY (user_address_system_number),
+CONSTRAINT uq_user_profile_address_type UNIQUE (user_profile_system_number, address_type_code),
 FOREIGN KEY (user_profile_system_number) REFERENCES slv_user_profile(user_profile_system_number),
 FOREIGN KEY (address_type_code) REFERENCES ref_user_address_type(user_address_type_code),
 FOREIGN KEY (country_code) REFERENCES ref_country(country_code),
@@ -108,7 +107,8 @@ user_preference_type_code STRING,
 user_preference_selection_indicator BOOLEAN, 
 source_system_update_timestamp TIMESTAMP, 
 
-CONSTRAINT user_pref_pk PRIMARY KEY (user_profile_system_number, user_preference_type_code),
+CONSTRAINT user_pref_pk PRIMARY KEY (user_preference_system_number),
+CONSTRAINT user_profile_user_pref_type_uq UNIQUE (user_profile_system_number, user_preference_type_code),
 FOREIGN KEY (user_profile_system_number) REFERENCES slv_user_profile(user_profile_system_number),
 FOREIGN KEY (user_preference_type_code) REFERENCES ref_user_preference_type(user_preference_type_code)
 """
@@ -119,7 +119,8 @@ user_profile_system_number BIGINT,
 user_deletion_reason_type_code STRING, 
 user_deletion_timestamp TIMESTAMP,
 
-CONSTRAINT user_del_pk PRIMARY KEY (user_profile_system_number, user_deletion_reason_type_code),
+CONSTRAINT user_del_pk PRIMARY KEY (user_deletion_reason_system_number),
+CONSTRAINT user_profile_user_del_uq UNIQUE (user_profile_system_number, user_deletion_reason_type_code),
 FOREIGN KEY (user_profile_system_number) REFERENCES slv_user_profile(user_profile_system_number),
 FOREIGN KEY (user_deletion_reason_type_code) REFERENCES ref_deletion_reason_type(deletion_reason_type_code)
 """
@@ -127,16 +128,16 @@ FOREIGN KEY (user_deletion_reason_type_code) REFERENCES ref_deletion_reason_type
 
 # === MASTER === 
 
-mstr_contact_user_link_schema = """
-contact_unique_identfier_text STRING, 
+mst_contact_link_schema = """
+master_contact_identifier_text STRING, 
 user_profile_system_number BIGINT, 
 primary_user_profile_indicator BOOLEAN,
 
 FOREIGN KEY(user_profile_system_number) REFERENCES slv_user_profile(user_profile_system_number)
 """
 
-mstr_address_user_link_schema = """
-address_unique_identifier_text STRING, 
+mst_address_link_schema = """
+master_address_identifier_text STRING, 
 user_address_system_number BIGINT, 
 primary_user_address_indicator BOOLEAN, 
 
@@ -175,4 +176,3 @@ ref_deletion_reason_type_schema = """
 deletion_reason_type_code STRING PRIMARY KEY,
 deletion_reason_text STRING
 """
-

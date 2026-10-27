@@ -11,6 +11,8 @@ target_checkpoint_volume_path = config.get("target_checkpoint_volume_path")
 
 user_profile_table_name = f"{target_schema}.slv_user_profile"
 
+spark.sql(f"USE {target_schema}")
+
 spark.sql(f"""
     CREATE TABLE IF NOT EXISTS {user_profile_table_name} (
         {s.user_profile_schema}

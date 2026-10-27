@@ -11,6 +11,9 @@ target_checkpoint_volume_path = config.get("target_checkpoint_volume_path")
 user_table_name = f"{target_schema}.raw_user"
 delete_table_name = f"{target_schema}.raw_delete_request"
 
+spark.sql(f"USE {target_schema}")
+
+
 spark.sql(f"""
     CREATE TABLE IF NOT EXISTS {user_table_name} (
         {s.user_raw_schema}

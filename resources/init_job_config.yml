@@ -3,24 +3,27 @@ resources:
     init_job:
       name: init_job
       tasks:
-        - task_key: land_new_data
-          environment_key: Default
-          spark_python_task:
-            python_file: ../src/land_new_data.py
-
         - task_key: init_catalog
           environment_key: Default
+          max_retries: 0
           spark_python_task:
             python_file: ../src/init_catalog.py
-          depends_on:
-            - task_key: land_new_data
 
         - task_key: init_reference
           environment_key: Default
+          max_retries: 0
           spark_python_task:
             python_file: ../src/init_reference.py
           depends_on:
             - task_key: init_catalog
+
+        - task_key: land_new_data
+          environment_key: Default
+          max_retries: 0
+          spark_python_task:
+            python_file: ../src/land_new_data.py
+          depends_on:
+            - task_key: init_reference
 
       parameters:
         - name: catalog

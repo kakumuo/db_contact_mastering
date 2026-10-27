@@ -5,11 +5,13 @@ resources:
       tasks: 
         - task_key: ingest_data
           environment_key: Default
+          max_retries: 0
           spark_python_task: 
             python_file: ../src/ingest_data.py 
 
         - task_key: persist_user_profile
           environment_key: Default
+          max_retries: 0
           spark_python_task: 
             python_file: ../src/persist_user_profile.py 
           depends_on: 
@@ -17,6 +19,7 @@ resources:
 
         - task_key: persist_user_deletes
           environment_key: Default
+          max_retries: 0
           spark_python_task: 
             python_file: ../src/persist_user_deletes.py 
           depends_on:
@@ -24,16 +27,18 @@ resources:
 
         - task_key: master_address
           environment_key: Default
+          max_retries: 0
           spark_python_task: 
             python_file: ../src/master_address.py 
-          depends_on: 
+          depends_on:
             - task_key: persist_user_deletes
 
         - task_key: master_contact
           environment_key: Default
+          max_retries: 0
           spark_python_task: 
             python_file: ../src/master_contact.py 
-          depends_on: 
+          depends_on:
             - task_key: master_address
             
       parameters: 
