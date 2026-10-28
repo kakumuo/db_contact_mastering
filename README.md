@@ -100,3 +100,69 @@ any point in time when there is an update or change.
     "requested_at":"datetime (ISO 8601 format)",
 }
 ```
+
+
+
+# Objective
+Creating a contact mastering process using contact data from `worksapce.contact_mastering.user_profile`
+
+## Tools
+- Apache Spark
+- Databricks
+- Spark SQL
+
+## Considerations
+- Multiple users that share either an email address or phone number will be associated with a UUID. 
+- Will need to work with a streaming table that contains both fields, email or phone number
+- Email or phone number can be null, but not both
+- A record will be identified as primary in comparison to other records if: 
+    - it has the most amount of OptIn prefrences, checking against `user_preference` table
+    - the most amount of addresses, checking against `user_address` table
+    - the most amount of populated values, checking against `user_profile` table
+    - in the case that the above criteria are the same, the most recent update timestamp on `user_profile` table
+
+## Schemas
+
+### *mst_contact*
+```json
+{
+    "master_identification_text":"string", 
+    "user_profile_system_number":"bigint", //fk with user_profile_system_number on user_profile 
+    "primary_contact_identifier":"boolean"
+}
+```
+
+### *user_profile*
+```json
+{
+    "user_profile_system_number":"bigint", 
+    "user_profile_name":"string",
+    "electronic_mail_address":"string",
+    "telephone_number":"string",
+    "user_first_name":"string",
+    "user_last_name":"string",
+    "source_system_update_timestamp":"datetime"
+    "user_profile_delete_indicator":"string",
+}
+```
+
+### *user_address*
+```json
+{
+    "user_address_system_number":"bigint", 
+    "user_profile_system_number":"bigint", //fk with user_profile_system_number on user_profile 
+    "user_address_type_code":"string",
+    "record_logical_delete_indicator":"boolean"
+}
+```
+
+### *user_preference*
+```json
+{
+    "user_preference_system_number":"bigint", 
+    "user_profile_system_number":"bigint", //fk with user_profile_system_number on user_profile 
+    "user_preference_type_code":"string",
+    "user_preference_selection_indicator":"boolean"
+}
+```
+
