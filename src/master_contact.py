@@ -223,11 +223,11 @@ user_profile_updates = (
     spark.readStream
     .format("delta")
     # .option("startingVersion", 0)
-    .table(SRC_PROF)
+    .table(SRC_PROF)    
 )
 
 query = (
-    spark.table("user_profile_updates")
+    user_profile_updates
     .writeStream
     .foreachBatch(process_batch)
     .option("checkpointLocation", CHK_PATH)
