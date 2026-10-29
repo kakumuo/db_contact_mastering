@@ -1,47 +1,38 @@
 
-# Requirements
-
-## 1. Goal
-- To create a unified, clean, and deduplicated source of truth for customer contact information (profiles) and physical addresses, 
+# 1. Overview
+- A sample contact mastering pipeline that deduplciates contacts based off an email address and phone number
+- Create, clean, and deduplicated source of truth for customer contact information (profiles) and physical addresses, 
 linking all records back to a unique Customer Golden ID.
-- The pipeline must produce two core, mastered datasets: `contact` and `contact_address`.
-
+- The pipeline must produce two core, mastered datasets: `contact` and `address`.
 
 ## 2. Requirements
-### 1: Data Ingestion
+### 2.1: Data Ingestion
 - The pipeline must consume data from the following sources:
     * `user.json`: User behavioral and communication preferences.
     * `delete_request.json`: Data indicating user requests for account deletion (Requires careful handling, see DQ).
 
-### 2: Contact Mastering (`contact` table)
-- The pipeline must deduplication contacts on a combination of `email`, `name`, `phone number` and `user id`
-- Matching logic must be either: 
-    1. Exact match on `email` and/or `phone`
-    2. Fuzzy match on `names` and/or `phone` and/or `email`, if exact match fails
+### 2.2: Contact Mastering (`contact` table)
+- The pipeline must deduplication contacts on a combination of `email`, `phone number`
+- Matching will be done using an exact match on the email or phone number
 - Mastered records must have a primary identifier stating the 'best' or most recently updated chlid record
 - All records must be linked with a `Master Id`
 
-### 3: Address Mastering (`address` table)
+### 2.3: Address Mastering (`address` table)
 - All address components (Street Lines, City, State, Zip) must be standardized according to postal service guidelines
 - Street details must be recorded as individual components (`street number`, `street name`, `street prefix`, `unit identifier`)
 - Addresses must be mastered regardless of the original user and address type
 - Addresses must be able to be linked back to a master contact
 
-### 4: Right to be Forgotten
+### 2.4: Right to be Forgotten
 - User records that have been requested to be deletetd must be removed.
 - If a user has been removed, all associated address and contact parent records should be recalculated and remastered
 - If a contact record loses all child records, then the contact record should be deleted. 
 - Right to be forgotten requests should be recorded and categorized depending on what information was provided in the `reason` 
 field of the source file. Options must be either `No Reason` or any/multiple of the following `Embarrasment`, `Privacy`, `Lack of Trust`, `Other`
 
-### 5: Data Enrichment
+### 2.5: Data Enrichment
 - **Preferences:** Combine all user preferences into a single up to date preference payload under the master record. If all options under
 a single preference is `Opt-In`, then the mastered preference should also be `Opt-In`, otherwise it should be `Opt-Out`
-
-### 6: Quality Check
-- User addreesses must contain a value for the `address_line_1`, `country`, `state`, `city` and `zip` fields
-- Users cannot have multiple addresses with the same `address_type` value; Address types are limited to `Shipping` or `Billing`. 
-- Users must submit profile info with at least `email` or `phone` values present
 
 ## 3. Use Cases
 - The solution developed with the functional requirements above must support the following sample use cases
@@ -100,69 +91,3 @@ any point in time when there is an update or change.
     "requested_at":"datetime (ISO 8601 format)",
 }
 ```
-
-
-
-# Objective
-Creating a contact mastering process using contact data from `worksapce.contact_mastering.user_profile`
-
-## Tools
-- Apache Spark
-- Databricks
-- Spark SQL
-
-## Considerations
-- Multiple users that share either an email address or phone number will be associated with a UUID. 
-- Will need to work with a streaming table that contains both fields, email or phone number
-- Email or phone number can be null, but not both
-- A record will be identified as primary in comparison to other records if: 
-    - it has the most amount of OptIn prefrences, checking against `user_preference` table
-    - the most amount of addresses, checking against `user_address` table
-    - the most amount of populated values, checking against `user_profile` table
-    - in the case that the above criteria are the same, the most recent update timestamp on `user_profile` table
-
-## Schemas
-
-### *mst_contact*
-```json
-{
-    "master_identification_text":"string", 
-    "user_profile_system_number":"bigint", //fk with user_profile_system_number on user_profile 
-    "primary_contact_identifier":"boolean"
-}
-```
-
-### *user_profile*
-```json
-{
-    "user_profile_system_number":"bigint", 
-    "user_profile_name":"string",
-    "electronic_mail_address":"string",
-    "telephone_number":"string",
-    "user_first_name":"string",
-    "user_last_name":"string",
-    "source_system_update_timestamp":"datetime"
-    "user_profile_delete_indicator":"string",
-}
-```
-
-### *user_address*
-```json
-{
-    "user_address_system_number":"bigint", 
-    "user_profile_system_number":"bigint", //fk with user_profile_system_number on user_profile 
-    "user_address_type_code":"string",
-    "record_logical_delete_indicator":"boolean"
-}
-```
-
-### *user_preference*
-```json
-{
-    "user_preference_system_number":"bigint", 
-    "user_profile_system_number":"bigint", //fk with user_profile_system_number on user_profile 
-    "user_preference_type_code":"string",
-    "user_preference_selection_indicator":"boolean"
-}
-```
-
